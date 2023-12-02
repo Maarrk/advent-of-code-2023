@@ -19,9 +19,6 @@
             "label": "Build all days",
             "type": "shell",
             "command": "cmake",
-            "dependsOn": [
-                "Configure all days",
-            ],
             "args": [
                 "--build",
                 "./build"
