@@ -1,28 +1,20 @@
-#include <algorithm>
-#include <fstream>
-#include <iostream>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 
-using namespace std::string_literals;
+#include "doctest.h"
 
-int main(int argc, char *argv[]) {
-    const auto input_filename = [&] {
-        if (argc >= 2)
-            return std::string{argv[1]};
-        else
-            return "example.txt"s;
-    }();
+#include "day02.h"
 
-    std::ifstream input_file{input_filename};
-    if (input_file.fail()) {
-        std::cerr << "Could not open " << input_filename << std::endl;
-        return EXIT_FAILURE;
+using namespace std::literals;
+
+int parse_game_id(std::string_view line) {
+    if (!line.starts_with("Game "sv)) {
+        throw std::invalid_argument{"Expected line to start with 'Game '"};
     }
+    return 0;
+}
 
-    std::string line;
-    while (std::getline(input_file, line)) {
-        std::cout << line << std::endl;
-    }
-
-    return EXIT_SUCCESS;
+TEST_CASE("parsing game id") {
+    CHECK_THROWS(parse_game_id("Gaym 15: 3 blue, 4 red"));
 }

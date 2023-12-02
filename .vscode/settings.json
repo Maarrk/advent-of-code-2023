@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.in": "coffeescript",
+        "*.asm": "nasm",
+        "xstring": "cpp"
+    }
+}

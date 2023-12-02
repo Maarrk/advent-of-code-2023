@@ -19,6 +19,9 @@
             "label": "Build all days",
             "type": "shell",
             "command": "cmake",
+            "dependsOn": [
+                "Configure all days",
+            ],
             "args": [
                 "--build",
                 "./build"
@@ -31,6 +34,24 @@
             "label": "Run current day",
             "type": "shell",
             "command": "./day02",
+            "dependsOn": [
+                "Build all days",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/day02/Debug"
+            }
+        },
+        {
+            "label": "Test current day",
+            "type": "shell",
+            "command": "./day02test",
+            "dependsOn": [
+                "Build all days",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "options": {
                 "cwd": "${workspaceFolder}/build/day02/Debug"
             }
@@ -39,24 +60,14 @@
             "label": "Run current with puzzle",
             "type": "shell",
             "command": "./day02",
+            "dependsOn": [
+                "Build all days",
+            ],
             "args": [
                 "puzzle.txt"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/build/day02/Debug"
-            }
-        },
-        {
-            "label": "Build and run current",
-            "dependsOn": [
-                "Configure all days",
-                "Build all days",
-                "Run current day"
-            ],
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
             }
         },
     ]
