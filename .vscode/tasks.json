@@ -30,20 +30,20 @@
         {
             "label": "Run current day",
             "type": "shell",
-            "command": "./day01",
+            "command": "./day02",
             "options": {
-                "cwd": "${workspaceFolder}/build/day01/Debug"
+                "cwd": "${workspaceFolder}/build/day02/Debug"
             }
         },
         {
             "label": "Run current with puzzle",
             "type": "shell",
-            "command": "./day01",
+            "command": "./day02",
             "args": [
                 "puzzle.txt"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/build/day01/Debug"
+                "cwd": "${workspaceFolder}/build/day02/Debug"
             }
         },
         {
