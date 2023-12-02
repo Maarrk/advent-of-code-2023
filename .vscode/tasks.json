@@ -36,6 +36,17 @@
             }
         },
         {
+            "label": "Run current with puzzle",
+            "type": "shell",
+            "command": "./day01",
+            "args": [
+                "puzzle.txt"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/day01/Debug"
+            }
+        },
+        {
             "label": "Build and run current",
             "dependsOn": [
                 "Configure all days",
@@ -47,6 +58,6 @@
                 "kind": "build",
                 "isDefault": true
             }
-        }
+        },
     ]
 }
