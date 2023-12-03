@@ -24,10 +24,13 @@ int main(int argc, char *argv[]) {
     }
 
     std::string line;
+    int sum{0};
     while (std::getline(input_file, line)) {
-        parse_game_id(line);
-        std::cout << line << std::endl;
+        if (validate_game(line))
+            sum += parse_game_id(line);
     }
+
+    std::cout << "Part 1 answer: " << sum << std::endl;
 
     return EXIT_SUCCESS;
 }

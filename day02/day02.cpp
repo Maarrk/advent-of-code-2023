@@ -10,15 +10,7 @@
 
 using namespace std::literals;
 
-struct CubeSet {
-    int red{0};
-    int green{0};
-    int blue{0};
-
-    bool operator==(const CubeSet &) const = default;
-};
-
-int parse_game_id(std::string_view line) {
+int parse_game_id(const std::string_view line) {
     if (!line.starts_with("Game "sv)) {
         throw std::invalid_argument{"Expected line to start with 'Game '"};
     }
@@ -46,7 +38,7 @@ TEST_CASE("parsing game id") {
     CHECK_EQ(parse_game_id("Game 15: 3 blue, 4 red"), 15);
 }
 
-CubeSet parse_draw(std::string_view draw) {
+CubeSet parse_draw(const std::string_view draw) {
     CubeSet set{};
     struct {
         int &field;
@@ -76,7 +68,8 @@ CubeSet parse_draw(std::string_view draw) {
                 if (parse_result.ec != std::errc{} ||
                     parse_result.ptr != &draw_part[number_end]) {
                     throw std::invalid_argument{std::format(
-                        "Invalid dice number for color{} in part", fm.name)};
+                        "Invalid dice number for color{} in part '{}'", fm.name,
+                        draw_part)};
                 }
                 fm.is_set = true;
             }
@@ -95,4 +88,41 @@ TEST_CASE("parsing single draw") {
     CHECK_EQ(parse_draw(" 1 red"), CubeSet{1, 0, 0});
     CHECK_EQ(parse_draw(" 1 red, 2 green, 3 blue"), CubeSet{1, 2, 3});
     CHECK_THROWS(parse_draw(" 1 red, 2 green, 3 red"));
+}
+
+bool CubeSet::is_subset(const CubeSet &other) const {
+    return (red <= other.red) && (green <= other.green) && (blue <= other.blue);
+}
+
+bool validate_game(const std::string_view line) {
+    const CubeSet limits{.red = 12, .green = 13, .blue = 14};
+
+    auto draw_begin = std::find(line.begin(), line.end(), ':');
+    if (draw_begin == line.end()) {
+        throw std::invalid_argument{"Expected line to have ':' character"};
+    }
+    auto draw_end = ++draw_begin; // skip the separator
+
+    while (draw_begin != line.end()) {
+        draw_end = std::find(draw_end, line.end(), ';');
+        std::string_view draw{draw_begin, draw_end};
+        CubeSet draw_result = parse_draw(draw);
+        if (!draw_result.is_subset(limits))
+            return false;
+
+        if (draw_end != line.end())
+            draw_end++; // skip the separator on every iteration except last
+        draw_begin = draw_end;
+    }
+
+    return true;
+}
+
+TEST_CASE("validating a game") {
+    CHECK(validate_game("Game 1: 1 blue, 2 green, 3 red"));
+    CHECK_THROWS(validate_game("Game 1 2 blue"));
+    CHECK(validate_game(
+        "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green"));
+    CHECK_FALSE(validate_game("Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, "
+                              "13 green; 5 green, 1 red"));
 }

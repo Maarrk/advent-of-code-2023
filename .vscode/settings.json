@@ -2,6 +2,15 @@
     "files.associations": {
         "*.in": "coffeescript",
         "*.asm": "nasm",
-        "xstring": "cpp"
+        "xstring": "cpp",
+        "iterator": "cpp",
+        "compare": "cpp",
+        "iosfwd": "cpp",
+        "list": "cpp",
+        "system_error": "cpp",
+        "vector": "cpp",
+        "xlocale": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
     }
 }

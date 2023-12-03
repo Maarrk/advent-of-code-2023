@@ -59,6 +59,7 @@
             "type": "shell",
             "command": "./day02",
             "dependsOn": [
+                "Configure all days", // to copy the puzzle file
                 "Build all days",
             ],
             "args": [
