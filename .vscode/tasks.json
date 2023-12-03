@@ -32,9 +32,6 @@
             "label": "Run current day",
             "type": "shell",
             "command": "./day02",
-            "dependsOn": [
-                "Build all days",
-            ],
             "options": {
                 "cwd": "${workspaceFolder}/build/day02/Debug"
             }
@@ -58,10 +55,6 @@
             "label": "Run current with puzzle",
             "type": "shell",
             "command": "./day02",
-            "dependsOn": [
-                "Configure all days", // to copy the puzzle file
-                "Build all days",
-            ],
             "args": [
                 "puzzle.txt"
             ],

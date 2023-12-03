@@ -24,13 +24,19 @@ int main(int argc, char *argv[]) {
     }
 
     std::string line;
-    int sum{0};
+    int valid_game_sum{0};
+    int required_power_sum{0};
     while (std::getline(input_file, line)) {
-        if (validate_game(line))
-            sum += parse_game_id(line);
+        CubeSet required_set = game_required_set(line);
+
+        if (required_set.is_subset(CubeSet::valid_game_limit))
+            valid_game_sum += parse_game_id(line);
+
+        required_power_sum += required_set.power();
     }
 
-    std::cout << "Part 1 answer: " << sum << std::endl;
+    std::cout << "Part 1 answer: " << valid_game_sum << std::endl
+              << "Part 2 answer: " << required_power_sum << std::endl;
 
     return EXIT_SUCCESS;
 }

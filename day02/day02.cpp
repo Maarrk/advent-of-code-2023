@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <charconv>
 #include <format>
 #include <stdexcept>
@@ -9,6 +10,8 @@
 #include "day02.h"
 
 using namespace std::literals;
+
+const CubeSet CubeSet::valid_game_limit{12, 13, 14};
 
 int parse_game_id(const std::string_view line) {
     if (!line.starts_with("Game "sv)) {
@@ -94,35 +97,52 @@ bool CubeSet::is_subset(const CubeSet &other) const {
     return (red <= other.red) && (green <= other.green) && (blue <= other.blue);
 }
 
-bool validate_game(const std::string_view line) {
-    const CubeSet limits{.red = 12, .green = 13, .blue = 14};
+CubeSet CubeSet::set_union(const CubeSet &other) const {
+    return CubeSet{
+        .red = std::max(red, other.red),
+        .green = std::max(green, other.green),
+        .blue = std::max(blue, other.blue),
+    };
+}
 
+TEST_CASE("set operations") {
+    CHECK_EQ(CubeSet{}.set_union(CubeSet{}), CubeSet{});
+    CHECK_EQ(CubeSet{1, 0, 0}.set_union(CubeSet{0, 1, 0}), CubeSet{1, 1, 0});
+    CHECK_EQ(CubeSet{1, 0, 1}.set_union(CubeSet{0, 0, 2}), CubeSet{1, 0, 2});
+}
+
+int CubeSet::power() const { return red * green * blue; }
+
+CubeSet game_required_set(const std::string_view line) {
     auto draw_begin = std::find(line.begin(), line.end(), ':');
     if (draw_begin == line.end()) {
         throw std::invalid_argument{"Expected line to have ':' character"};
     }
     auto draw_end = ++draw_begin; // skip the separator
 
+    CubeSet required{};
     while (draw_begin != line.end()) {
         draw_end = std::find(draw_end, line.end(), ';');
         std::string_view draw{draw_begin, draw_end};
-        CubeSet draw_result = parse_draw(draw);
-        if (!draw_result.is_subset(limits))
-            return false;
+        required = required.set_union(parse_draw(draw));
 
         if (draw_end != line.end())
             draw_end++; // skip the separator on every iteration except last
         draw_begin = draw_end;
     }
 
-    return true;
+    return required;
 }
 
 TEST_CASE("validating a game") {
-    CHECK(validate_game("Game 1: 1 blue, 2 green, 3 red"));
-    CHECK_THROWS(validate_game("Game 1 2 blue"));
-    CHECK(validate_game(
-        "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green"));
-    CHECK_FALSE(validate_game("Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, "
-                              "13 green; 5 green, 1 red"));
+    CHECK(game_required_set("Game 1: 1 blue, 2 green, 3 red")
+              .is_subset(CubeSet::valid_game_limit));
+    CHECK_THROWS(game_required_set("Game 1 2 blue"));
+    CHECK(game_required_set(
+              "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
+              .is_subset(CubeSet::valid_game_limit));
+    CHECK_FALSE(
+        game_required_set("Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, "
+                          "13 green; 5 green, 1 red")
+            .is_subset(CubeSet::valid_game_limit));
 }
