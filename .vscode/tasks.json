@@ -31,15 +31,15 @@
         {
             "label": "Run current day",
             "type": "shell",
-            "command": "./day02",
+            "command": "./day03",
             "options": {
-                "cwd": "${workspaceFolder}/build/day02/Debug"
+                "cwd": "${workspaceFolder}/build/day03/Debug"
             }
         },
         {
             "label": "Test current day",
             "type": "shell",
-            "command": "./day02test",
+            "command": "./day03test",
             "dependsOn": [
                 "Build all days",
             ],
@@ -48,18 +48,18 @@
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/build/day02/Debug"
+                "cwd": "${workspaceFolder}/build/day03/Debug"
             }
         },
         {
             "label": "Run current with puzzle",
             "type": "shell",
-            "command": "./day02",
+            "command": "./day03",
             "args": [
                 "puzzle.txt"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/build/day02/Debug"
+                "cwd": "${workspaceFolder}/build/day03/Debug"
             }
         },
     ]
