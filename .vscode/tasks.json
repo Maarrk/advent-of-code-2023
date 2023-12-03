@@ -21,7 +21,8 @@
             "command": "cmake",
             "args": [
                 "--build",
-                "./build"
+                "./build",
+                "-j 8"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
