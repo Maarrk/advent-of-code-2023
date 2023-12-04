@@ -26,11 +26,11 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    char_mat mat = load_istream(input_file);
+    auto mat = load_istream(input_file);
 
-    // FIXME: wrong extents when loading puzzle input (tests and example file
-    // are ok) Loaded mat 18446744073709551500 rows by 18446744073709551500
-    // columns
+    // FIXME: wrong extents when loading puzzle input (tests and example are ok)
+    // Loaded mat 18446744073709551500 rows by 18446744073709551500 columns
+    // (this number is 0xffff'ffff'ffff'ff8c where 0x8c = 140)
     std::cout << std::format("Loaded mat {} rows by {} columns\n",
                              mat.extent(0), mat.extent(1));
 

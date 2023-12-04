@@ -84,6 +84,22 @@ TEST_CASE("loading from stream") {
         CHECK_EQ(mat.extent(0), 2);
         CHECK_EQ(mat.extent(1), 3);
     }
+    {
+        const size_t count = 140;
+        const auto line = std::string(count, '.');
+        std::stringstream inbuf{};
+        for (size_t i = 0; i < count; i++) {
+            if (i != 0)
+                inbuf << "\n";
+            inbuf << line;
+        }
+
+        auto mat = load_istream(inbuf);
+        CHECK_EQ(mat.size(), count * count);
+        CHECK_EQ(mat(0, 0), '.');
+        CHECK_EQ(mat.extent(0), count);
+        CHECK_EQ(mat.extent(1), count);
+    }
 }
 
 std::vector<char>::const_iterator row_end(const char_mat &mat,
