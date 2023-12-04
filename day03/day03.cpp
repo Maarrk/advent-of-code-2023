@@ -13,8 +13,10 @@
 
 using namespace std::literals;
 
-// Would be nice to change into mdarray to own data
-load_istream_result load_istream(std::istream &in, std::string &container) {
+char_mat load_istream(std::istream &in) {
+    // mdarray seems to only accept vector as container
+    std::vector<char> container{};
+
     std::string line{};
     int line_number = 0;
     std::optional<size_t> line_length{};
@@ -28,56 +30,51 @@ load_istream_result load_istream(std::istream &in, std::string &container) {
                                 line_number, line.length(), *line_length)};
             }
         } else {
+            if (line.length() == 0) {
+                throw std::invalid_argument{"Empty input line"};
+            }
             line_length = line.length();
         }
-        container.append(line);
+
+        for (auto &&c : line) {
+            container.push_back(c);
+        }
     }
 
     if (line_length) {
-        return load_istream_result{
-            container,
-            stdex::mdspan{container.data(), container.length() / *line_length,
-                          *line_length},
-        };
+        size_t rows = container.size() / *line_length;
+        return char_mat{std::dextents<char, 2>{rows, *line_length}, container};
     } else {
-        return load_istream_result{
-            container,
-            stdex::mdspan{container.data(), 0, 0},
-        };
+        return char_mat{};
     }
 }
 
 TEST_CASE("loading from stream") {
     {
-        std::string container_bad{};
         std::istringstream inbuf_bad{"123\n12"};
-        CHECK_THROWS(load_istream(inbuf_bad, container_bad));
-        std::string container_ok{};
+        CHECK_THROWS(load_istream(inbuf_bad));
         std::istringstream inbuf_ok{"123\n123"};
-        CHECK_NOTHROW(load_istream(inbuf_ok, container_ok));
+        CHECK_NOTHROW(load_istream(inbuf_ok));
+        std::istringstream inbuf_zero{"\n\n"};
+        CHECK_THROWS(load_istream(inbuf_zero));
     }
     {
         std::istringstream inbuf{""};
-        std::string container{};
-        auto result = load_istream(inbuf, container);
-        CHECK_EQ(result.text, ""sv);
-        CHECK_EQ(result.mds.size(), 0);
+        auto mat = load_istream(inbuf);
+        CHECK_EQ(mat.size(), 0);
     }
     {
         std::istringstream inbuf{"a"};
-        std::string container{};
-        auto result = load_istream(inbuf, container);
-        CHECK_EQ(result.text, "a"sv);
-        CHECK_EQ(result.mds.size(), 1);
-        CHECK_EQ(result.mds(0, 0), 'a');
+        auto mat = load_istream(inbuf);
+        CHECK_EQ(mat.size(), 1);
+        CHECK_EQ(mat(0, 0), 'a');
     }
     {
         std::istringstream inbuf{"abc\ndef"};
-        std::string container{};
-        auto result = load_istream(inbuf, container);
-        CHECK_EQ(result.mds.size(), 6);
-        CHECK_EQ(result.mds(0, 0), 'a');
-        CHECK_EQ(result.mds(1, 1), 'e');
-        CHECK_EQ(result.mds(0, 2), 'c');
+        auto mat = load_istream(inbuf);
+        CHECK_EQ(mat.size(), 6);
+        CHECK_EQ(mat(0, 0), 'a');
+        CHECK_EQ(mat(1, 1), 'e');
+        CHECK_EQ(mat(0, 2), 'c');
     }
 }
