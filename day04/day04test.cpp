@@ -179,9 +179,9 @@ Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
 Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11)"};
 
-    CHECK_EQ(read_card_value(example), 8); // Card 1
-    CHECK_EQ(read_card_value(example), 2); // Card 2
-    // CHECK_EQ(read_card_value(example), 2); // Card 3
+    CHECK_EQ(read_card_matches(example), 4); // Card 1
+    CHECK_EQ(read_card_matches(example), 2); // Card 2
+    // CHECK_EQ(read_card_matches(example), 2); // Card 3
     {
         CHECK_EQ(read_header(example), 3);
         set_t win_num{};
@@ -189,9 +189,9 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11)"};
         CHECK_EQ(win_num, set_t{1, 21, 53, 59, 44});
         CHECK_EQ(read_winning_count(win_num, example), 2);
     }
-    CHECK_EQ(read_card_value(example), 1); // Card 4
-    CHECK_EQ(read_card_value(example), 0); // Card 5
-    CHECK_EQ(read_card_value(example), 0); // Card 6
+    CHECK_EQ(read_card_matches(example), 1); // Card 4
+    CHECK_EQ(read_card_matches(example), 0); // Card 5
+    CHECK_EQ(read_card_matches(example), 0); // Card 6
     CHECK(example.eof());
 
     {

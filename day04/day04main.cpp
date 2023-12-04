@@ -1,9 +1,13 @@
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
+#include <numeric>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "day04.h"
 
@@ -23,11 +27,19 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    int point_sum{0}, point_sum2{0};
+    std::vector<int> matches{};
     while (!input_file.eof()) {
-        point_sum += read_card_value(input_file);
+        matches.push_back(read_card_matches(input_file));
     }
 
+    // C++20 <ranges> babyyyy :D
+    auto points = matches | std::views::transform([](const int n) {
+                      return n > 0 ? pow(2, n - 1) : 0;
+                  });
+    // C++20 didn't require ranges in <numeric> :(
+    int point_sum = std::accumulate(std::ranges::begin(points),
+                                    std::ranges::end(points), 0);
+    int point_sum2{0};
     std::cout << "Part 1 answer: " << point_sum << std::endl
               << "Part 2 answer: " << point_sum2 << std::endl;
 

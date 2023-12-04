@@ -13,16 +13,12 @@
 
 using namespace std::literals;
 
-int read_card_value(std::istream &in) {
+int read_card_matches(std::istream &in) {
     read_header(in);
     std::set<int> winning_numbers{};
     read_winning(winning_numbers, in);
     int count = read_winning_count(winning_numbers, in);
-    if (count == 0) {
-        return 0;
-    } else {
-        return 1 << (count - 1);
-    }
+    return count;
 }
 
 int read_header(std::istream &in) {

@@ -1,7 +1,7 @@
 #include <istream>
 #include <streambuf>
 
-int read_card_value(std::istream &in);
+int read_card_matches(std::istream &in);
 int read_header(std::istream &in);
 
 // Template functions need to be fully defined where declared
