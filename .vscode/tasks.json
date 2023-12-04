@@ -34,7 +34,7 @@
             "type": "shell",
             "command": "./day03",
             "args": [
-                "../example.txt"
+                "example.txt"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/build/day03"
@@ -60,7 +60,7 @@
             "type": "shell",
             "command": "./day03",
             "args": [
-                "../puzzle.txt"
+                "puzzle.txt"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/build/day03"
