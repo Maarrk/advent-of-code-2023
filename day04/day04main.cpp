@@ -23,13 +23,13 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::string line;
-    while (std::getline(input_file, line)) {
-        std::cout << line << std::endl;
+    int point_sum{0}, point_sum2{0};
+    while (!input_file.eof()) {
+        point_sum += read_card_value(input_file);
     }
 
-    // std::cout << "Part 1 answer: " << point_sum << std::endl
-    //           << "Part 2 answer: " << point_sum2 << std::endl;
+    std::cout << "Part 1 answer: " << point_sum << std::endl
+              << "Part 2 answer: " << point_sum2 << std::endl;
 
     return EXIT_SUCCESS;
 }
