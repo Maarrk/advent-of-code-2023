@@ -1,3 +1,4 @@
+#include <ranges>
 #include <sstream>
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
@@ -209,4 +210,17 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11)"};
         std::istringstream card3num{"69 82 63 72 16 21 14  1"};
         CHECK_EQ(read_winning_count(win_num, card3num), 8);
     }
+}
+
+TEST_CASE("win_card_counts()") {
+    std::vector<int> matches{4, 2, 2, 1, 0, 0};
+    auto counts = win_card_counts(matches);
+    CHECK_EQ(counts.size(), matches.size());
+    CHECK(std::ranges::all_of(counts, [](const int n) { return n >= 1; }));
+    CHECK_EQ(counts[0], 1);  // Card 1
+    CHECK_EQ(counts[1], 2);  // Card 2
+    CHECK_EQ(counts[2], 4);  // Card 3
+    CHECK_EQ(counts[3], 8);  // Card 4
+    CHECK_EQ(counts[4], 14); // Card 5
+    CHECK_EQ(counts[5], 1);  // Card 6
 }

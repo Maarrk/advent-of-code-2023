@@ -39,9 +39,12 @@ int main(int argc, char *argv[]) {
     // C++20 didn't require ranges in <numeric> :(
     int point_sum = std::accumulate(std::ranges::begin(points),
                                     std::ranges::end(points), 0);
-    int point_sum2{0};
+
+    auto card_counts = win_card_counts(matches);
+    int card_sum = std::accumulate(card_counts.begin(), card_counts.end(), 0);
+
     std::cout << "Part 1 answer: " << point_sum << std::endl
-              << "Part 2 answer: " << point_sum2 << std::endl;
+              << "Part 2 answer: " << card_sum << std::endl;
 
     return EXIT_SUCCESS;
 }

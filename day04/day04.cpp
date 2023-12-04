@@ -46,3 +46,30 @@ int read_header(std::istream &in) {
 
     return number;
 }
+
+std::vector<int> win_card_counts(const std::vector<int> &matches) {
+    std::vector<int> counts(matches.size(), 1);
+
+    auto outer_match_it = matches.begin();
+    auto outer_count_it = counts.begin();
+    while (outer_match_it != matches.end()) {
+        int match_count = *outer_match_it;
+        int instance_count = *outer_count_it;
+
+        if (match_count > std::distance(outer_count_it, counts.end()))
+            throw std::logic_error{std::format(
+                "A card had {} matches, while being {}th card from the "
+                "end, which would overflow",
+                match_count, std::distance(outer_count_it, counts.end()))};
+
+        auto inner_count_it = outer_count_it;
+        for (size_t i = 0; i < match_count; i++) {
+            *(++inner_count_it) += instance_count;
+        }
+
+        outer_match_it++;
+        outer_count_it++;
+    }
+
+    return counts;
+}

@@ -1,8 +1,10 @@
 #include <istream>
 #include <streambuf>
+#include <vector>
 
 int read_card_matches(std::istream &in);
 int read_header(std::istream &in);
+std::vector<int> win_card_counts(const std::vector<int> &matches);
 
 // Template functions need to be fully defined where declared
 template <typename S>
