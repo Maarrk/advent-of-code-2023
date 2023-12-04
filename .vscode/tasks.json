@@ -9,7 +9,8 @@
             "command": "cmake",
             "args": [
                 ".",
-                "-B build"
+                "-B build",
+                "-G Ninja"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -36,7 +37,7 @@
                 "../example.txt"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/build/day03/Debug"
+                "cwd": "${workspaceFolder}/build/day03"
             }
         },
         {
@@ -51,7 +52,7 @@
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/build/day03/Debug"
+                "cwd": "${workspaceFolder}/build/day03"
             }
         },
         {
@@ -62,7 +63,7 @@
                 "../puzzle.txt"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/build/day03/Debug"
+                "cwd": "${workspaceFolder}/build/day03"
             }
         },
     ]
