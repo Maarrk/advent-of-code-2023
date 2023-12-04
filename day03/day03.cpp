@@ -19,16 +19,16 @@ char_mat load_istream(std::istream &in) {
     std::vector<char> container{};
 
     std::string line{};
-    int line_number = 0;
-    std::optional<size_t> line_length{};
+    int line_number{0};
+    int line_length{0};
     while (std::getline(in, line)) {
         line_number++;
         if (line_length) {
-            if (line.length() != *line_length) {
+            if (line.length() != line_length) {
                 throw std::invalid_argument{
                     std::format("Line {} with length {} different than first "
                                 "line length ({})",
-                                line_number, line.length(), *line_length)};
+                                line_number, line.length(), line_length)};
             }
         } else {
             if (line.length() == 0) {
@@ -43,8 +43,8 @@ char_mat load_istream(std::istream &in) {
     }
 
     if (line_length) {
-        size_t rows = container.size() / *line_length;
-        return char_mat{std::dextents<char, 2>{rows, *line_length}, container};
+        size_t rows = container.size() / line_length;
+        return char_mat{std::dextents<size_t, 2>{rows, line_length}, container};
     } else {
         return char_mat{};
     }
@@ -93,6 +93,10 @@ TEST_CASE("loading from stream") {
                 inbuf << "\n";
             inbuf << line;
         }
+        // had wrong extents when loading puzzle input
+        // smaller tests and example are OK. Gives number 18446744073709551500,
+        // which is equal to 0xffff'ffff'ffff'ff8c, where 0x8c = 140
+        // caused by wrong extents (first param is index type, NOT the element)
 
         auto mat = load_istream(inbuf);
         CHECK_EQ(mat.size(), count * count);

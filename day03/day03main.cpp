@@ -28,9 +28,6 @@ int main(int argc, char *argv[]) {
 
     auto mat = load_istream(input_file);
 
-    // FIXME: wrong extents when loading puzzle input (tests and example are ok)
-    // Loaded mat 18446744073709551500 rows by 18446744073709551500 columns
-    // (this number is 0xffff'ffff'ffff'ff8c where 0x8c = 140)
     std::cout << std::format("Loaded mat {} rows by {} columns\n",
                              mat.extent(0), mat.extent(1));
 
@@ -55,29 +52,28 @@ int main(int argc, char *argv[]) {
                 break;
             num_end = std::find_if(num_begin, row_end(mat, row), not_digit);
 
-            // int number;
-            // auto result = std::from_chars(&(*num_begin), &(*num_end),
-            // number); if (result.ec != std::errc{}) {
-            //     throw std::runtime_error{
-            //         std::format("Couldn't convert '{}' to number",
-            //                     std::string{num_begin, num_end})};
-            // }
+            int number;
+            auto result = std::from_chars(&(*num_begin), &(*num_end), number);
+            if (result.ec != std::errc{}) {
+                throw std::runtime_error{
+                    std::format("Couldn't convert '{}' to number",
+                                std::string{num_begin, num_end})};
+            }
 
-            // int column = std::distance(row_begin, num_begin);
-            // mat_part columns{column,
-            //                  column + std::distance(num_begin, num_end) - 1};
+            int column = std::distance(row_begin, num_begin);
+            mat_part columns{column,
+                             column + std::distance(num_begin, num_end) - 1};
 
-            // iterate_adjacent(mat, {row, row}, columns, search_symbol);
-            // if (symbol) {
-            //     parts_sum += number;
-            //     // std::cout << std::format("Part {} with symbol {}\n",
-            //     number,
-            //     //                          *symbol);
-            // } else {
-            //     // std::cout << std::format("Number {} with no symbols\n",
-            //     // number);
-            // }
-            // symbol.reset();
+            iterate_adjacent(mat, {row, row}, columns, search_symbol);
+            if (symbol) {
+                parts_sum += number;
+                // std::cout << std::format("Part {} with symbol {}\n", number,
+                //                          *symbol);
+            } else {
+                // std::cout << std::format("Number {} with no symbols\n",
+                // number);
+            }
+            symbol.reset();
         }
     }
 
