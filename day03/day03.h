@@ -19,6 +19,8 @@ mat_it it_at(const char_mat &mat, char_mat::index_type row,
              char_mat::index_type column);
 void iterate_adjacent(
     const char_mat &mat, mat_part rows, mat_part columns,
-    std::function<bool(char_mat::element_type)> continue_predicate);
+    std::function<bool(char_mat::element_type, char_mat::index_type,
+                       char_mat::index_type)>
+        continue_predicate);
 
 bool is_symbol(char c);

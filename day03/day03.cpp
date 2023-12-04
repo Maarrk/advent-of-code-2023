@@ -20,15 +20,15 @@ char_mat load_istream(std::istream &in) {
 
     std::string line{};
     int line_number{0};
-    int line_length{0};
+    std::optional<size_t> line_length{};
     while (std::getline(in, line)) {
         line_number++;
         if (line_length) {
-            if (line.length() != line_length) {
+            if (line.length() != *line_length) {
                 throw std::invalid_argument{
                     std::format("Line {} with length {} different than first "
                                 "line length ({})",
-                                line_number, line.length(), line_length)};
+                                line_number, line.length(), *line_length)};
             }
         } else {
             if (line.length() == 0) {
@@ -43,8 +43,9 @@ char_mat load_istream(std::istream &in) {
     }
 
     if (line_length) {
-        size_t rows = container.size() / line_length;
-        return char_mat{std::dextents<size_t, 2>{rows, line_length}, container};
+        size_t rows = container.size() / *line_length;
+        return char_mat{std::dextents<size_t, 2>{rows, *line_length},
+                        container};
     } else {
         return char_mat{};
     }
@@ -143,7 +144,9 @@ mat_it it_at(const char_mat &mat, char_mat::index_type row,
 
 void iterate_adjacent(
     const char_mat &mat, mat_part rows, mat_part columns,
-    std::function<bool(char_mat::element_type)> continue_predicate) {
+    std::function<bool(char_mat::element_type, char_mat::index_type,
+                       char_mat::index_type)>
+        continue_predicate) {
 
     // done as int for signed subtraction
     char_mat::size_type min_row = std::max((int)0, (int)rows.first - 1);
@@ -154,7 +157,7 @@ void iterate_adjacent(
 
     for (char_mat::size_type r = min_row; r <= max_row; r++) {
         for (char_mat::size_type c = min_col; c <= max_col; c++) {
-            if (!continue_predicate(mat(r, c))) {
+            if (!continue_predicate(mat(r, c), r, c)) {
                 return;
             }
         }
@@ -200,7 +203,7 @@ TEST_CASE("character matrix iteration") {
             return set;
         };
         char_set visited{};
-        const auto visit_all = [&visited](char c) {
+        const auto visit_all = [&visited](char c, size_t, size_t) {
             visited.insert(c);
             return true;
         };
@@ -226,7 +229,7 @@ TEST_CASE("character matrix iteration") {
         visited.clear();
 
         int visited_counter{0};
-        const auto visit_four = [&visited_counter](char c) {
+        const auto visit_four = [&visited_counter](char c, size_t, size_t) {
             if (++visited_counter >= 4)
                 return false;
             return true;

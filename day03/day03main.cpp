@@ -3,6 +3,7 @@
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -11,6 +12,11 @@
 #include "day03.h"
 
 using namespace std::literals;
+
+struct GearInfo {
+    int part_count{0};
+    int part_product{1};
+};
 
 int main(int argc, char *argv[]) {
     const auto input_filename = [&] {
@@ -34,13 +40,15 @@ int main(int argc, char *argv[]) {
     const auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
     const auto not_digit = [](char c) { return c < '0' || c > '9'; };
     std::optional<char> symbol{};
-    const auto search_symbol = [&symbol](char c) {
+    const auto search_symbol = [&symbol](char c, size_t row, size_t col) {
         if (is_symbol(c)) {
             symbol = c;
             return false;
         }
         return true;
     };
+
+    std::map<std::pair<size_t, size_t>, GearInfo> gears{};
 
     int parts_sum{0};
     for (size_t row = 0; row < mat.extent(0); row++) {
@@ -65,6 +73,21 @@ int main(int argc, char *argv[]) {
                              column + std::distance(num_begin, num_end) - 1};
 
             iterate_adjacent(mat, {row, row}, columns, search_symbol);
+
+            const auto save_gears = [&gears, number](char c, size_t row,
+                                                     size_t col) {
+                if (c == '*') {
+                    if (!gears.contains({row, col})) {
+                        gears[std::make_pair(row, col)] = GearInfo{};
+                    }
+                    auto &info = gears.at(std::make_pair(row, col));
+                    info.part_count++;
+                    info.part_product *= number;
+                }
+                return true;
+            };
+            iterate_adjacent(mat, {row, row}, columns, save_gears);
+
             if (symbol) {
                 parts_sum += number;
                 // std::cout << std::format("Part {} with symbol {}\n", number,
@@ -78,6 +101,19 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Part 1 answer: " << parts_sum << std::endl;
+
+    int part_product_sum{0};
+    for (auto &&kv : gears) {
+        // std::cout << std::format("r {}\tc {}\tN {}\tprod {}\n",
+        // kv.first.first,
+        //                          kv.first.second, kv.second.part_count,
+        //                          kv.second.part_product);
+        if (kv.second.part_count == 2) {
+            part_product_sum += kv.second.part_product;
+        }
+    }
+
+    std::cout << "Part 2 answer: " << part_product_sum << std::endl;
 
     return EXIT_SUCCESS;
 }
