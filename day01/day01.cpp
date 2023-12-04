@@ -15,6 +15,10 @@ int main(int argc, char *argv[]) {
             return "example.txt"s;
     }();
 
+    bool part2{false};
+    if (argc >= 3 && argv[2][0] == '2')
+        part2 = true;
+
     std::ifstream input_file{input_filename};
     if (input_file.fail()) {
         std::cerr << "Could not open " << input_filename << std::endl;
@@ -22,60 +26,60 @@ int main(int argc, char *argv[]) {
     }
 
     std::string line;
-    int sum_part1 = 0;
-    int sum_part2 = 0;
+    int sum = 0;
     while (std::getline(input_file, line)) {
-        {
-            auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
-            auto first_it = std::find_if(line.begin(), line.end(), is_digit);
-            if (first_it == line.end()) {
-                std::cerr << "Line " << line << " did not contain any digits"
-                          << std::endl;
-                goto part2; // FIXME: Rework to alternatively run first or
-                            // second part
-            }
-            auto last_it = std::find_if(line.rbegin(), line.rend(), is_digit);
+        const auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
 
-            auto tens = *first_it - '0';
-            auto ones = *last_it - '0';
+        if (part2)
+            mark_spelled_digits(line);
 
-            sum_part1 += tens * 10 + ones;
-        }
-    part2: {
-        auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
-        mark_spelled_digits(line);
         auto first_it = std::find_if(line.begin(), line.end(), is_digit);
         if (first_it == line.end()) {
             std::cerr << "Line " << line << " did not contain any digits"
                       << std::endl;
-            return EXIT_FAILURE;
         }
         auto last_it = std::find_if(line.rbegin(), line.rend(), is_digit);
 
         auto tens = *first_it - '0';
         auto ones = *last_it - '0';
 
-        sum_part2 += tens * 10 + ones;
-    }
+        sum += tens * 10 + ones;
     }
 
-    std::cout << "Part 1 answer: " << sum_part1 << std::endl
-              << "Part 2 answer: " << sum_part2 << std::endl;
+    std::cout << "Part " << (part2 ? 2 : 1) << " answer: " << sum << std::endl;
 
     return EXIT_SUCCESS;
 }
 
-// FIXME: replace words in order they appear in string, not by value
 void mark_spelled_digits(std::string &text) {
+    struct match {
+        size_t index{(size_t)-1};
+        int digit{0};
+    };
+
     const char spellings[10][6] = {"zero", // skip when replacing
                                    "one",  "two",   "three", "four", "five",
                                    "six",  "seven", "eight", "nine"};
-    for (char i = 1; i < 10; i++) {
-        size_t match_start = text.find(spellings[i]);
-        if (match_start != -1)
-            text[match_start] = '0' + i;
-        match_start = text.rfind(spellings[i]);
-        if (match_start != -1)
-            text[match_start] = '0' + i;
+
+    match first_match{};
+    match last_match{};
+    for (char digit = 1; digit < 10; digit++) {
+        size_t match_start = text.find(spellings[digit]);
+        if (match_start != -1 &&
+            (first_match.index == -1 || match_start < first_match.index)) {
+            first_match.index = match_start;
+            first_match.digit = digit;
+        }
+        match_start = text.rfind(spellings[digit]);
+        if (match_start != -1 &&
+            (last_match.index == -1 || match_start > last_match.index)) {
+            last_match.index = match_start;
+            last_match.digit = digit;
+        }
     }
+
+    if (first_match.index != -1)
+        text[first_match.index] = '0' + first_match.digit;
+    if (last_match.index != -1)
+        text[last_match.index] = '0' + last_match.digit;
 }
