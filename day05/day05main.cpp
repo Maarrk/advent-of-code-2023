@@ -1,9 +1,11 @@
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <numeric>
 #include <ranges>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -27,14 +29,9 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::string line{};
-    while (!input_file.eof()) {
-        std::getline(input_file, line);
-        std::cout << line << std::endl;
-    }
-
-    // std::cout << "Part 1 answer: " << ans1 << std::endl
-    //           << "Part 2 answer: " << ans2 << std::endl;
+    auto sol = solution(input_file, input_filename.ends_with("example.txt"));
+    std::cout << "Part 1 answer: " << sol.first << std::endl
+              << "Part 2 answer: " << sol.second << std::endl;
 
     return EXIT_SUCCESS;
 }

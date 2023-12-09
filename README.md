@@ -27,3 +27,7 @@ _Implicit `std::` before some identifiers here_
   - Parse data with streams and `>>`, practice stream state flags
   - Write templated function and switch between `set` and `unordered_set`
   - Use `ranges` and `accumulate` (unfortunately not usable together yet)
+- Day 5:
+  - Create a wrapper class for an operation that validates some logic invariants
+  - Define or default convenience operators on own types: `-`, `<=>`, `>>`
+  - Basic template on underlying numeric type
