@@ -30,40 +30,71 @@
             }
         },
         {
+            "label": "Build current day",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "./build",
+                "--target day05",
+                "-j 8"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Build current test",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "./build",
+                "--target day05test",
+                "-j 8"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
             "label": "Run current day",
             "type": "shell",
-            "command": "./day04",
+            "command": "./day05",
             "args": [
                 "example.txt"
             ],
+            "dependsOn": [
+                "Build current day",
+            ],
             "options": {
-                "cwd": "${workspaceFolder}/build/day04"
+                "cwd": "${workspaceFolder}/build/day05"
             }
         },
         {
             "label": "Test current day",
             "type": "shell",
-            "command": "./day04test",
+            "command": "./day05test",
             "dependsOn": [
-                "Build all days",
+                "Build current test",
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/build/day04"
+                "cwd": "${workspaceFolder}/build/day05"
             }
         },
         {
             "label": "Run current with puzzle",
             "type": "shell",
-            "command": "./day04",
+            "command": "./day05",
             "args": [
                 "puzzle.txt"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/build/day04"
+                "cwd": "${workspaceFolder}/build/day05"
             }
         },
     ]
