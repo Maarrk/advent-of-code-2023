@@ -43,15 +43,15 @@ constexpr Con operator-(Con a) {
     // invert vertically
     case Con::N:
     case Con::S:
-    // case Con::N | Con::EW:
-    // case Con::S | Con::EW:
+        // case Con::N | Con::EW:
+        // case Con::S | Con::EW:
         return a ^ Con::NS;
 
     // invert horizontally
     case Con::E:
     case Con::W:
-    // case Con::E | Con::NS:
-    // case Con::W | Con::NS:
+        // case Con::E | Con::NS:
+        // case Con::W | Con::NS:
         return a ^ Con::EW;
 
     // invert diagonally
@@ -77,6 +77,8 @@ TEST_CASE("Connections bitwise operations") {
     Con con{Con::NS};
     con &= Con::S;
     CHECK_EQ(con, Con::S);
+    con |= Con::W;
+    CHECK_EQ(con, Con::SW);
 
     CHECK_EQ(-Con::N, Con::S);
     CHECK_EQ(-Con::S, Con::N);
@@ -110,6 +112,10 @@ TEST_CASE("cell methods") {
 
     Cell nw{'J'};
     CHECK_EQ(nw.get_possible(), Con::NW);
+    CHECK_EQ(nw.get_linked(), Con::None);
+    nw.add_links(Con::N);
+    CHECK_EQ(nw.get_linked(), Con::N);
+    CHECK_THROWS(nw.add_links(Con::E));
 
     CHECK_THROWS(Cell{'X'});
 }
@@ -144,6 +150,12 @@ bool Cell::is_valid_linked(Connections con) {
     // Is a subset of possible connections?
     return (con | possible) == possible;
 };
+
+TEST_CASE("valid links") {
+    Cell c{'.'};
+    CHECK_NOTHROW(c.add_links(Con::None));
+    CHECK_THROWS(c.add_links(Con::N));
+}
 
 std::pair<std::vector<Cell>, Cell_mat> load_mat(std::istream &in) {
     std::vector<Cell> storage{};
@@ -202,5 +214,70 @@ TEST_CASE("loading cells") {
         CHECK_EQ(store.size(), 25);
         CHECK_EQ(mat.extent(0), 5);
         CHECK_EQ(mat.extent(1), 5);
+        for (const auto c : store) {
+            CHECK_EQ(c.get_linked(), Con::None);
+        }
+    }
+}
+
+void add_links(Cell_mat &mat) {
+    const auto rows = mat.extent(0);
+    const auto cols = mat.extent(1);
+    for (size_t r = 0; r < rows; r++) {
+        for (size_t c = 0; c < cols; c++) {
+            if (mat(r, c).get_linked() != Con::None) {
+                throw std::runtime_error{std::format(
+                    "WHY IS IT {} at {},{} where possible are {}",
+                    static_cast<size_t>(mat(r, c).get_linked()), r, c,
+                    static_cast<size_t>(mat(r, c).get_possible()))};
+            }
+        }
+    }
+
+    for (size_t r = 0; r < rows; r++) {
+        for (size_t c = 0; c < cols; c++) {
+            Con links{Con::None};
+            Cell &cell = mat(r, c);
+
+            // FIXME: Sometimes is 221 or some other value when running test
+            CHECK_EQ(cell.get_linked(), Con::None);
+
+            if (r > 0 && (cell.get_possible() & Con::N) != Con::None &&
+                (mat(r - 1, c).get_possible() & Con::S) != Con::None)
+                links |= Con::N;
+            if (c > 0 && (cell.get_possible() & Con::W) != Con::None &&
+                (mat(r, c - 1).get_possible() & Con::E) != Con::None)
+                links |= Con::W;
+            if (r < (rows - 1) && (cell.get_possible() & Con::S) != Con::None &&
+                (mat(r + 1, c).get_possible() & Con::N) != Con::None)
+                links |= Con::S;
+            if (c < (cols - 1) && (cell.get_possible() & Con::E) != Con::None &&
+                (mat(r, c + 1).get_possible() & Con::W) != Con::None)
+                links |= Con::E;
+
+            cell.add_links(links);
+        }
+    }
+}
+
+TEST_CASE("add_links()") {
+    {
+        std::istringstream in{R"(-L|F7
+7S-7|
+L|7||
+-L-J|
+L|-JF)"};
+        std::vector<Cell> store;
+        Cell_mat mat;
+        auto res = load_mat(in);
+        store = res.first;
+        mat = res.second;
+        for (const auto c : store) {
+            CHECK_EQ(c.get_linked(), Con::None);
+        }
+        add_links(mat);
+        CHECK_EQ(mat(0, 0).get_linked(), Con::None);
+        CHECK_EQ(mat(1, 1).get_linked(), Con::SE);
+        CHECK_EQ(mat(3, 2).get_linked(), Con::EW);
     }
 }

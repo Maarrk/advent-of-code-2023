@@ -72,3 +72,4 @@ class Cell {
 };
 
 std::pair<std::vector<Cell>, Cell_mat> load_mat(std::istream &in);
+void add_links(Cell_mat &mat);

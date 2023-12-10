@@ -20,11 +20,8 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::string line;
-    while (input_file) {
-        std::getline(input_file, line);
-        std::cout << line << std::endl;
-    }
+    auto [storage, mat] = load_mat(input_file);
+    add_links(mat);
 
     std::cout << "Part 1 answer: " << 0 << std::endl;
     std::cout << "Part 2 answer: " << 0 << std::endl;
