@@ -157,7 +157,7 @@ TEST_CASE("valid links") {
     CHECK_THROWS(c.add_links(Con::N));
 }
 
-std::pair<std::vector<Cell>, Cell_mat> load_mat(std::istream &in) {
+Cell_mat load_mat(std::istream &in) {
     std::vector<Cell> storage{};
     std::optional<size_t> row_length;
     size_t row = 1;
@@ -200,7 +200,7 @@ std::pair<std::vector<Cell>, Cell_mat> load_mat(std::istream &in) {
         throw std::invalid_argument{std::format(
             "last row only had {} chars, expected {}", column, *row_length)};
 
-    return {storage, Cell_mat(storage.data(), row, column)};
+    return Cell_mat(std::dextents<size_t, 2>{row, column}, storage);
 }
 
 TEST_CASE("loading cells") {
@@ -210,13 +210,10 @@ TEST_CASE("loading cells") {
 .|.|.
 .L-J.
 .....)"};
-        auto [store, mat] = load_mat(in);
-        CHECK_EQ(store.size(), 25);
+        auto mat = load_mat(in);
+        CHECK_EQ(mat.size(), 25);
         CHECK_EQ(mat.extent(0), 5);
         CHECK_EQ(mat.extent(1), 5);
-        for (const auto c : store) {
-            CHECK_EQ(c.get_linked(), Con::None);
-        }
     }
 }
 
@@ -225,23 +222,8 @@ void add_links(Cell_mat &mat) {
     const auto cols = mat.extent(1);
     for (size_t r = 0; r < rows; r++) {
         for (size_t c = 0; c < cols; c++) {
-            if (mat(r, c).get_linked() != Con::None) {
-                throw std::runtime_error{std::format(
-                    "WHY IS IT {} at {},{} where possible are {}",
-                    static_cast<size_t>(mat(r, c).get_linked()), r, c,
-                    static_cast<size_t>(mat(r, c).get_possible()))};
-            }
-        }
-    }
-
-    for (size_t r = 0; r < rows; r++) {
-        for (size_t c = 0; c < cols; c++) {
             Con links{Con::None};
             Cell &cell = mat(r, c);
-
-            // FIXME: Sometimes is 221 or some other value when running test
-            CHECK_EQ(cell.get_linked(), Con::None);
-
             if (r > 0 && (cell.get_possible() & Con::N) != Con::None &&
                 (mat(r - 1, c).get_possible() & Con::S) != Con::None)
                 links |= Con::N;
@@ -267,14 +249,7 @@ TEST_CASE("add_links()") {
 L|7||
 -L-J|
 L|-JF)"};
-        std::vector<Cell> store;
-        Cell_mat mat;
-        auto res = load_mat(in);
-        store = res.first;
-        mat = res.second;
-        for (const auto c : store) {
-            CHECK_EQ(c.get_linked(), Con::None);
-        }
+        auto mat = load_mat(in);
         add_links(mat);
         CHECK_EQ(mat(0, 0).get_linked(), Con::None);
         CHECK_EQ(mat(1, 1).get_linked(), Con::SE);

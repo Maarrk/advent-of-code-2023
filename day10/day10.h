@@ -4,14 +4,14 @@
 #include <tuple>
 #include <vector>
 
-#include <experimental/mdspan>
+#include <experimental/mdarray>
 
 #include "doctest.h"
 
 namespace stdex = std::experimental;
 
 class Cell;
-using Cell_mat = stdex::mdspan<Cell, std::dextents<size_t, 2>>;
+using Cell_mat = stdex::mdarray<Cell, std::dextents<size_t, 2>>;
 
 enum class Connections : uint8_t {
     None = 0x00,
@@ -71,5 +71,5 @@ class Cell {
     bool is_valid_linked(Connections con);
 };
 
-std::pair<std::vector<Cell>, Cell_mat> load_mat(std::istream &in);
+Cell_mat load_mat(std::istream &in);
 void add_links(Cell_mat &mat);
