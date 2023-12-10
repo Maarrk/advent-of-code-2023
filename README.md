@@ -31,3 +31,6 @@ _Implicit `std::` before some identifiers here_
   - Create a wrapper class for an operation that validates some logic invariants
   - Define or default convenience operators on own types: `-`, `<=>`, `>>`
   - Basic template on underlying numeric type
+- Day 10:
+  - Enum of flags
+  - `constexpr` functions
