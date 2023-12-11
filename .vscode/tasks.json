@@ -36,7 +36,7 @@
             "args": [
                 "--build",
                 "./build",
-                "--target day10",
+                "--target day11",
                 "-j 8"
             ],
             "options": {
@@ -50,7 +50,7 @@
             "args": [
                 "--build",
                 "./build",
-                "--target day10test",
+                "--target day11test",
                 "-j 8"
             ],
             "options": {
@@ -60,7 +60,7 @@
         {
             "label": "Run current day",
             "type": "shell",
-            "command": "./day10",
+            "command": "./day11",
             "args": [
                 "example.txt"
             ],
@@ -68,13 +68,13 @@
                 "Build current day",
             ],
             "options": {
-                "cwd": "${workspaceFolder}/build/day10"
+                "cwd": "${workspaceFolder}/build/day11"
             }
         },
         {
             "label": "Test current day",
             "type": "shell",
-            "command": "./day10test",
+            "command": "./day11test",
             "dependsOn": [
                 "Build current test",
             ],
@@ -83,18 +83,18 @@
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/build/day10"
+                "cwd": "${workspaceFolder}/build/day11"
             }
         },
         {
             "label": "Run current with puzzle",
             "type": "shell",
-            "command": "./day10",
+            "command": "./day11",
             "args": [
                 "puzzle.txt"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/build/day10"
+                "cwd": "${workspaceFolder}/build/day11"
             }
         },
     ]
