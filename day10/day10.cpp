@@ -1,3 +1,4 @@
+#include <deque>
 #include <format>
 #include <ranges>
 #include <sstream>
@@ -200,7 +201,7 @@ Cell_mat load_mat(std::istream &in) {
         throw std::invalid_argument{std::format(
             "last row only had {} chars, expected {}", column, *row_length)};
 
-    return Cell_mat(std::dextents<size_t, 2>{row, column}, storage);
+    return Cell_mat(Cell_mat::extents_type{row, column}, storage);
 }
 
 TEST_CASE("loading cells") {
@@ -242,7 +243,54 @@ void add_links(Cell_mat &mat) {
     }
 }
 
-TEST_CASE("add_links()") {
+void count_distance(Cell_mat &mat, std::optional<Location> start) {
+    if (!start) {
+        auto it = std::ranges::find_if(mat.container(), [](Cell c) {
+            return c.get_possible() == Con::All;
+        });
+        if (it == mat.container().end()) {
+            throw std::invalid_argument{
+                "specify start location or pass a mat containing a start cell"};
+        }
+        auto idx = std::distance(mat.container().begin(), it);
+        auto row = idx / mat.stride(0);
+        auto col = idx % mat.stride(0);
+        start = Location{row, col};
+    }
+
+    const auto cell_at = [&mat](Location l) -> Cell & {
+        return mat(l.first, l.second);
+    };
+    cell_at(*start).start_distance = 0;
+
+    std::deque<Location> next_loc{*start};
+    while (next_loc.size() > 0) {
+        auto current = next_loc.front();
+        next_loc.pop_front();
+
+        struct {
+            Con direction;
+            Location other;
+        } options[4]{
+            {Con::N, {current.first - 1, current.second}},
+            {Con::S, {current.first + 1, current.second}},
+            {Con::E, {current.first, current.second + 1}},
+            {Con::W, {current.first, current.second - 1}},
+        };
+        for (size_t i = 0; i < 4; i++) {
+            auto o = options[i];
+            if ((cell_at(current).get_linked() & o.direction) != Con::None) {
+                if (!cell_at(o.other).start_distance) {
+                    cell_at(o.other).start_distance =
+                        *cell_at(current).start_distance + 1;
+                    next_loc.push_back(o.other);
+                }
+            }
+        }
+    }
+}
+
+TEST_CASE("example loops") {
     {
         std::istringstream in{R"(-L|F7
 7S-7|
@@ -254,5 +302,21 @@ L|-JF)"};
         CHECK_EQ(mat(0, 0).get_linked(), Con::None);
         CHECK_EQ(mat(1, 1).get_linked(), Con::SE);
         CHECK_EQ(mat(3, 2).get_linked(), Con::EW);
+
+        count_distance(mat);
+        CHECK_EQ(mat(1, 1).start_distance, 0);
+        CHECK_EQ(mat(3, 3).start_distance, 4);
+    }
+    {
+        std::istringstream in{R"(7-F7-
+.FJ|7
+SJLL7
+|F--J
+LJ.LJ)"};
+        auto mat = load_mat(in);
+        add_links(mat);
+        count_distance(mat);
+        CHECK_EQ(mat(2, 0).start_distance, 0);
+        CHECK_EQ(mat(2, 4).start_distance, 8);
     }
 }

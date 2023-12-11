@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <ranges>
 #include <string>
 
 #include "day10.h"
@@ -20,10 +21,15 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    auto [storage, mat] = load_mat(input_file);
+    auto mat = load_mat(input_file);
     add_links(mat);
+    count_distance(mat);
+    auto max_distance =
+        std::ranges::max(mat.container() | std::views::transform([](Cell c) {
+                             return c.start_distance ? *c.start_distance : -1;
+                         }));
 
-    std::cout << "Part 1 answer: " << 0 << std::endl;
+    std::cout << "Part 1 answer: " << max_distance << std::endl;
     std::cout << "Part 2 answer: " << 0 << std::endl;
 
     return EXIT_SUCCESS;

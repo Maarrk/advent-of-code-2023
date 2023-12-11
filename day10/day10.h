@@ -12,6 +12,7 @@ namespace stdex = std::experimental;
 
 class Cell;
 using Cell_mat = stdex::mdarray<Cell, std::dextents<size_t, 2>>;
+using Location = std::pair<Cell_mat::index_type, Cell_mat::index_type>;
 
 enum class Connections : uint8_t {
     None = 0x00,
@@ -73,3 +74,4 @@ class Cell {
 
 Cell_mat load_mat(std::istream &in);
 void add_links(Cell_mat &mat);
+void count_distance(Cell_mat &mat, std::optional<Location> start = {});
