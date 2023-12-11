@@ -34,3 +34,4 @@ _Implicit `std::` before some identifiers here_
 - Day 10:
   - Enum of flags
   - `constexpr` functions
+  - `variant` with `monostate` (to get sth like `optional<variant>`)

@@ -22,15 +22,19 @@ int main(int argc, char *argv[]) {
     }
 
     auto mat = load_mat(input_file);
-    add_links(mat);
-    count_distance(mat);
-    auto max_distance =
-        std::ranges::max(mat.container() | std::views::transform([](Cell c) {
-                             return c.start_distance ? *c.start_distance : -1;
-                         }));
+    set_usage(mat);
+
+    auto max_distance = std::ranges::max(
+        mat.container() | std::views::transform([](Cell c) {
+            return c.usage.index() == 1 ? std::get<short>(c.usage) : -1;
+        }));
+    auto enclosed_count = std::ranges::count_if(mat.container(), [](Cell c) {
+        return c.usage.index() == Cell::Contained &&
+               std::get<Cell::Contained>(c.usage);
+    });
 
     std::cout << "Part 1 answer: " << max_distance << std::endl;
-    std::cout << "Part 2 answer: " << 0 << std::endl;
+    std::cout << "Part 2 answer: " << enclosed_count << std::endl;
 
     return EXIT_SUCCESS;
 }

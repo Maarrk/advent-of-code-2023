@@ -109,7 +109,7 @@ void Cell::add_links(Connections neighbors) {
 TEST_CASE("cell methods") {
     Cell def{};
     CHECK_EQ(def.get_possible(), Con::None);
-    CHECK_FALSE(def.start_distance);
+    CHECK_EQ(def.usage.index(), Cell::None);
 
     Cell nw{'J'};
     CHECK_EQ(nw.get_possible(), Con::NW);
@@ -218,7 +218,13 @@ TEST_CASE("loading cells") {
     }
 }
 
-void add_links(Cell_mat &mat) {
+void set_usage(Cell_mat &mat) {
+    _add_links(mat);
+    _count_distance(mat);
+    _mark_contained(mat);
+}
+
+void _add_links(Cell_mat &mat) {
     const auto rows = mat.extent(0);
     const auto cols = mat.extent(1);
     for (size_t r = 0; r < rows; r++) {
@@ -243,7 +249,7 @@ void add_links(Cell_mat &mat) {
     }
 }
 
-void count_distance(Cell_mat &mat, std::optional<Location> start) {
+void _count_distance(Cell_mat &mat, std::optional<Location> start) {
     if (!start) {
         auto it = std::ranges::find_if(mat.container(), [](Cell c) {
             return c.get_possible() == Con::All;
@@ -261,7 +267,7 @@ void count_distance(Cell_mat &mat, std::optional<Location> start) {
     const auto cell_at = [&mat](Location l) -> Cell & {
         return mat(l.first, l.second);
     };
-    cell_at(*start).start_distance = 0;
+    cell_at(*start).usage.emplace<Cell::Distance>(0);
 
     std::deque<Location> next_loc{*start};
     while (next_loc.size() > 0) {
@@ -280,13 +286,42 @@ void count_distance(Cell_mat &mat, std::optional<Location> start) {
         for (size_t i = 0; i < 4; i++) {
             auto o = options[i];
             if ((cell_at(current).get_linked() & o.direction) != Con::None) {
-                if (!cell_at(o.other).start_distance) {
-                    cell_at(o.other).start_distance =
-                        *cell_at(current).start_distance + 1;
+                if (cell_at(o.other).usage.index() == Cell::None) {
+                    cell_at(o.other).usage.emplace<Cell::Distance>(
+                        std::get<Cell::Distance>(cell_at(current).usage) + 1);
                     next_loc.push_back(o.other);
                 }
             }
         }
+    }
+}
+
+void _mark_contained(Cell_mat &mat) {
+    // what was the name of the algorithm used for filling SVG paths?
+    const auto rows = mat.extent(0);
+    const auto cols = mat.extent(1);
+    for (size_t r = 0; r < rows; r++) {
+        Con row_xor = Con::None;
+        for (size_t c = 0; c < cols; c++) {
+            Cell &current = mat(r, c);
+            if (current.usage.index() == Cell::Distance) {
+                row_xor ^= current.get_linked();
+            } else if (current.usage.index() == Cell::None) {
+                bool both_vertical = (row_xor & Con::NS) == Con::None ||
+                                     (row_xor & Con::NS) == Con::NS;
+                bool both_horizontal = (row_xor & Con::EW) == Con::None ||
+                                       (row_xor & Con::EW) == Con::EW;
+                bool valid = both_vertical && both_horizontal;
+                CHECK_MESSAGE(valid, // doctest doesn't like || or && inside
+                              "logical invariant when not on the closed loop");
+                current.usage.emplace<Cell::Contained>((row_xor & Con::NS) ==
+                                                       Con::NS);
+            }
+        }
+        bool both_vertical =
+            (row_xor & Con::NS) == Con::None || (row_xor & Con::NS) == Con::NS;
+        CHECK_MESSAGE(both_vertical,
+                      "logical invariant after passing entire closed loop");
     }
 }
 
@@ -298,14 +333,18 @@ L|7||
 -L-J|
 L|-JF)"};
         auto mat = load_mat(in);
-        add_links(mat);
+        _add_links(mat);
         CHECK_EQ(mat(0, 0).get_linked(), Con::None);
         CHECK_EQ(mat(1, 1).get_linked(), Con::SE);
         CHECK_EQ(mat(3, 2).get_linked(), Con::EW);
 
-        count_distance(mat);
-        CHECK_EQ(mat(1, 1).start_distance, 0);
-        CHECK_EQ(mat(3, 3).start_distance, 4);
+        _count_distance(mat);
+        CHECK_EQ(std::get<Cell::Distance>(mat(1, 1).usage), 0);
+        CHECK_EQ(std::get<Cell::Distance>(mat(3, 3).usage), 4);
+
+        _mark_contained(mat);
+        CHECK_FALSE(std::get<Cell::Contained>(mat(0, 0).usage));
+        CHECK(std::get<Cell::Contained>(mat(2, 2).usage));
     }
     {
         std::istringstream in{R"(7-F7-
@@ -314,9 +353,13 @@ SJLL7
 |F--J
 LJ.LJ)"};
         auto mat = load_mat(in);
-        add_links(mat);
-        count_distance(mat);
-        CHECK_EQ(mat(2, 0).start_distance, 0);
-        CHECK_EQ(mat(2, 4).start_distance, 8);
+        _add_links(mat);
+        _count_distance(mat);
+        CHECK_EQ(std::get<Cell::Distance>(mat(2, 0).usage), 0);
+        CHECK_EQ(std::get<Cell::Distance>(mat(2, 4).usage), 8);
+
+        _mark_contained(mat);
+        CHECK_FALSE(std::get<Cell::Contained>(mat(0, 0).usage));
+        CHECK(std::get<Cell::Contained>(mat(2, 2).usage));
     }
 }

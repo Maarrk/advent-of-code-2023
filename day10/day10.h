@@ -2,6 +2,7 @@
 #include <istream>
 #include <optional>
 #include <tuple>
+#include <variant>
 #include <vector>
 
 #include <experimental/mdarray>
@@ -51,7 +52,12 @@ class Cell {
 
     bool operator==(const Cell &) const = default;
 
-    std::optional<short> start_distance{};
+    std::variant<std::monostate, short, bool> usage{};
+    enum Usage : size_t {
+        None = 0,
+        Distance = 1,
+        Contained = 2,
+    };
 
     Connections get_possible() const { return possible; };
     Connections get_linked() const { return linked; }
@@ -73,5 +79,7 @@ class Cell {
 };
 
 Cell_mat load_mat(std::istream &in);
-void add_links(Cell_mat &mat);
-void count_distance(Cell_mat &mat, std::optional<Location> start = {});
+void set_usage(Cell_mat &mat);
+void _add_links(Cell_mat &mat);
+void _count_distance(Cell_mat &mat, std::optional<Location> start = {});
+void _mark_contained(Cell_mat &mat);
