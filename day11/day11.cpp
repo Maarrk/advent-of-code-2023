@@ -133,76 +133,25 @@ TEST_CASE("site example") {
     CHECK_EQ(by_row[0], Galaxy{0, 4});  // move right by one
     CHECK_EQ(by_row[6], Galaxy{10, 9}); // move by two in both directions
 
-    auto pairs = closest_pairs(by_row, by_col);
-    int distance_sum = std::accumulate(
-        pairs.begin(), pairs.end(), 0,
-        [&by_row](int acc, const auto &p) -> int {
-            return acc + by_row[p.first].distance(by_row[p.second]);
-        });
+    auto distances = closest_distances(by_row);
+    int distance_sum = std::accumulate(distances.begin(), distances.end(), 0);
     CHECK_EQ(distance_sum, 374);
 }
 
-std::vector<std::pair<size_t, size_t>>
-closest_pairs(const std::vector<Galaxy> &by_row,
-              const std::vector<size_t> &by_col) {
-    std::vector<std::pair<size_t, size_t>> closest{};
+std::vector<int> closest_distances(const std::vector<Galaxy> &galaxies) {
+    std::vector<int> closest{};
 
-    CHECK_EQ(by_row.size(), by_col.size());
-    const size_t count = by_row.size();
-
-    // bci = by_col_index, bri = by_row_index
-    for (size_t bci = 0; bci < count; bci++) {
-        size_t bri = by_col[bci];
-        Galaxy g = by_row[bri];
-
-        // FIXME: Not enough pairs found
-        // Probably because of skipping lower index neighbors?
-
-        std::optional<int> min_dist;
-        std::optional<size_t> other_bri;
-        // optional is 'smaller' than any value, so to find minimal distance
-        // look for maximal negated distance
-
-        // both indexings are sorted spatially, so only check neighbors;
-        // the way question is written should give same results for ties;
-
-        // we only want ascending by_row indices in pair, so skip bri - 1;
-        if (bri < count - 1) {
-            Galaxy other = by_row[bri + 1];
-            if (-g.distance(other) > min_dist) {
-                min_dist = g.distance(other);
-                other_bri = bri + 1;
-            }
-        }
-        if (bci > 0 && by_col[bci - 1] > bri) {
-            Galaxy other = by_row[by_col[bci - 1]];
-            if (-g.distance(other) > min_dist) {
-                min_dist = g.distance(other);
-                other_bri = by_col[bci - 1];
-            }
-        }
-        if (bci < count - 1 && by_col[bci + 1] > bri) {
-            Galaxy other = by_row[by_col[bci + 1]];
-            if (-g.distance(other) > min_dist) {
-                min_dist = g.distance(other);
-                other_bri = by_col[bci + 1];
-            }
-        }
-
-        if (other_bri) { // can be empty with only one galaxy
-            auto second = *other_bri;
-
-            // assert logic in ifs above is correct for ascending pair
-            CHECK_LT(bri, second);
-            closest.emplace_back(bri, second);
+    // combinations 1-2, 1-3, 1-4, 2-3, 2-4, 3-4
+    for (auto low_it = galaxies.begin();
+         std::distance(low_it, galaxies.end()) > 1; low_it++) {
+        // when entering here, there is definitely space to increment low_it
+        for (auto high_it = low_it + 1; high_it != galaxies.end(); high_it++) {
+            closest.push_back((*low_it).distance(*high_it));
         }
     }
 
     // formula for unordered pair count of N items
-    CHECK_EQ(closest.size(), count * (count - 1) / 2);
+    CHECK_EQ(closest.size(), galaxies.size() * (galaxies.size() - 1) / 2);
 
-    // just to make it nicer to read and compare
-    // had to iterate by_col to have both indices
-    std::ranges::sort(closest);
     return closest;
 }

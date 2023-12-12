@@ -37,4 +37,4 @@ _Implicit `std::` before some identifiers here_
   - `variant` with `monostate` (to get sth like `optional<variant>`)
 - Day 11:
   - `emplace_back` into a `vector`
-
+  - Loop for pair combination with iterators

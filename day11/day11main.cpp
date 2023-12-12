@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <numeric>
 #include <string>
 
 #include "day11.h"
@@ -20,13 +21,13 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::string line{};
-    while (!input_file.eof()) {
-        std::getline(input_file, line);
-        std::cout << line << std::endl;
-    }
+    auto by_row = load(input_file);
+    auto by_col = sorted_by_col(by_row);
+    expand_universe(by_row, by_col);
+    auto distances = closest_distances(by_row);
+    int distance_sum = std::accumulate(distances.begin(), distances.end(), 0);
 
-    std::cout << "Part 1 answer: " << 0 << std::endl;
+    std::cout << "Part 1 answer: " << distance_sum << std::endl;
     std::cout << "Part 2 answer: " << 0 << std::endl;
 
     return EXIT_SUCCESS;
