@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <format>
+#include <numeric>
 #include <optional>
 #include <sstream>
 #include <tuple>
@@ -44,7 +45,7 @@ std::vector<Galaxy> load(std::istream &in) {
             col = 0;
             continue; // skip incrementing column
         } else if (c == '#') {
-            by_row.push_back(Galaxy{row, col});
+            by_row.emplace_back(row, col);
         } else if (c != '.') {
             throw std::invalid_argument{std::format(
                 "unexpected char '{}' at row {}, column {} (0-indexed)"
@@ -64,11 +65,6 @@ std::vector<Galaxy> load(std::istream &in) {
             "last row only had {} chars, expected {}", col, *row_length)};
 
     return by_row;
-}
-
-std::vector<int> shortest_distances(const std::vector<Galaxy> &by_row,
-                                    const std::vector<size_t> &by_col) {
-    return std::vector<int>();
 }
 
 TEST_CASE("trivial") {
@@ -136,4 +132,77 @@ TEST_CASE("site example") {
     CHECK_EQ(by_row[2], Galaxy{2, 0});  // unchanging
     CHECK_EQ(by_row[0], Galaxy{0, 4});  // move right by one
     CHECK_EQ(by_row[6], Galaxy{10, 9}); // move by two in both directions
+
+    auto pairs = closest_pairs(by_row, by_col);
+    int distance_sum = std::accumulate(
+        pairs.begin(), pairs.end(), 0,
+        [&by_row](int acc, const auto &p) -> int {
+            return acc + by_row[p.first].distance(by_row[p.second]);
+        });
+    CHECK_EQ(distance_sum, 374);
+}
+
+std::vector<std::pair<size_t, size_t>>
+closest_pairs(const std::vector<Galaxy> &by_row,
+              const std::vector<size_t> &by_col) {
+    std::vector<std::pair<size_t, size_t>> closest{};
+
+    CHECK_EQ(by_row.size(), by_col.size());
+    const size_t count = by_row.size();
+
+    // bci = by_col_index, bri = by_row_index
+    for (size_t bci = 0; bci < count; bci++) {
+        size_t bri = by_col[bci];
+        Galaxy g = by_row[bri];
+
+        // FIXME: Not enough pairs found
+        // Probably because of skipping lower index neighbors?
+
+        std::optional<int> min_dist;
+        std::optional<size_t> other_bri;
+        // optional is 'smaller' than any value, so to find minimal distance
+        // look for maximal negated distance
+
+        // both indexings are sorted spatially, so only check neighbors;
+        // the way question is written should give same results for ties;
+
+        // we only want ascending by_row indices in pair, so skip bri - 1;
+        if (bri < count - 1) {
+            Galaxy other = by_row[bri + 1];
+            if (-g.distance(other) > min_dist) {
+                min_dist = g.distance(other);
+                other_bri = bri + 1;
+            }
+        }
+        if (bci > 0 && by_col[bci - 1] > bri) {
+            Galaxy other = by_row[by_col[bci - 1]];
+            if (-g.distance(other) > min_dist) {
+                min_dist = g.distance(other);
+                other_bri = by_col[bci - 1];
+            }
+        }
+        if (bci < count - 1 && by_col[bci + 1] > bri) {
+            Galaxy other = by_row[by_col[bci + 1]];
+            if (-g.distance(other) > min_dist) {
+                min_dist = g.distance(other);
+                other_bri = by_col[bci + 1];
+            }
+        }
+
+        if (other_bri) { // can be empty with only one galaxy
+            auto second = *other_bri;
+
+            // assert logic in ifs above is correct for ascending pair
+            CHECK_LT(bri, second);
+            closest.emplace_back(bri, second);
+        }
+    }
+
+    // formula for unordered pair count of N items
+    CHECK_EQ(closest.size(), count * (count - 1) / 2);
+
+    // just to make it nicer to read and compare
+    // had to iterate by_col to have both indices
+    std::ranges::sort(closest);
+    return closest;
 }
