@@ -10,7 +10,7 @@
 
 #include "day11.h"
 
-int Galaxy::distance(const Galaxy &other) const {
+int64_t Galaxy::distance(const Galaxy &other) const {
     return std::abs(row - other.row) + std::abs(col - other.col);
 }
 
@@ -20,7 +20,7 @@ std::ostream &operator<<(std::ostream &os, const Galaxy &galaxy) {
 
 std::vector<Galaxy> load(std::istream &in) {
     std::vector<Galaxy> by_row{};
-    std::optional<int> row_length;
+    std::optional<int64_t> row_length;
     int row = 0;
     int col = 0;
     char c;
@@ -101,45 +101,69 @@ std::vector<size_t> sorted_by_col(const std::vector<Galaxy> &universe) {
 }
 
 void expand_universe(std::vector<Galaxy> &by_row,
-                     const std::vector<size_t> &by_col) {
+                     const std::vector<size_t> &by_col, int64_t factor) {
     { // grow rows first
-        int last_row = 0;
-        int growth = 0;
+        int64_t last_row = 0;
+        int64_t growth = 0;
         for (auto &galaxy : by_row) {
-            // grow by one less than row difference, but don't shrink
-            growth += std::max(0, galaxy.row - last_row - 1);
+            int64_t empty_rows = galaxy.row - last_row - 1;
+            // grow by the calculated amount but don't shrink
+            growth += std::max(0LL, empty_rows * factor - 1);
             last_row = galaxy.row; // still original coordinates here
             galaxy.row += growth;
         }
     }
     { // grow columns now
-        int last_col = 0;
-        int growth = 0;
+        int64_t last_col = 0;
+        int64_t growth = 0;
         for (auto galaxy_index : by_col) {
             auto &galaxy = by_row[galaxy_index];
-            growth += std::max(0, galaxy.col - last_col - 1);
+            int64_t empty_cols = galaxy.col - last_col - 1;
+            growth += std::max(0LL, empty_cols * (factor - 1));
             last_col = galaxy.col;
             galaxy.col += growth;
         }
     }
 }
 
-TEST_CASE("site example") {
-    std::vector<Galaxy> by_row{{0, 3}, {1, 7}, {2, 0}, {4, 6}, {5, 1},
-                               {6, 9}, {8, 7}, {9, 0}, {9, 4}};
-    auto by_col = sorted_by_col(by_row);
-    expand_universe(by_row, by_col);
-    CHECK_EQ(by_row[2], Galaxy{2, 0});  // unchanging
-    CHECK_EQ(by_row[0], Galaxy{0, 4});  // move right by one
-    CHECK_EQ(by_row[6], Galaxy{10, 9}); // move by two in both directions
-
-    auto distances = closest_distances(by_row);
-    int distance_sum = std::accumulate(distances.begin(), distances.end(), 0);
-    CHECK_EQ(distance_sum, 374);
+TEST_CASE("expansion validation") {
+    std::vector<Galaxy> initial{{0, 0}, {0, 3}};
+    auto by_col = sorted_by_col(initial);
+    auto grow2{initial};
+    expand_universe(grow2, by_col, 2);
+    CHECK_EQ(grow2[0], Galaxy{0, 0}); // sanity check
+    CHECK_EQ(grow2[1], Galaxy{0, 5}); // multiple columns
 }
 
-std::vector<int> closest_distances(const std::vector<Galaxy> &galaxies) {
-    std::vector<int> closest{};
+TEST_CASE("site example") {
+    std::vector<Galaxy> initial{{0, 3}, {1, 7}, {2, 0}, {4, 6}, {5, 1},
+                                {6, 9}, {8, 7}, {9, 0}, {9, 4}};
+    auto by_col = sorted_by_col(initial); // sorting won't change
+    auto grow2{initial};
+    expand_universe(grow2, by_col, 2);
+    CHECK_EQ(grow2[2], Galaxy{2, 0});  // unchanging
+    CHECK_EQ(grow2[0], Galaxy{0, 4});  // move right by one
+    CHECK_EQ(grow2[6], Galaxy{10, 9}); // move by two in both directions
+
+    auto dist2 = closest_distances(grow2);
+    int64_t sum2 = std::accumulate(dist2.begin(), dist2.end(), 0);
+    CHECK_EQ(sum2, 374);
+
+    auto grow10{initial};
+    expand_universe(grow10, by_col, 10);
+    auto dist10 = closest_distances(grow10);
+    int64_t sum10 = std::accumulate(dist10.begin(), dist10.end(), 0);
+    CHECK_EQ(sum10, 1030);
+
+    auto grow100{initial};
+    expand_universe(grow100, by_col, 100);
+    auto dist100 = closest_distances(grow100);
+    int64_t sum100 = std::accumulate(dist100.begin(), dist100.end(), 0);
+    CHECK_EQ(sum100, 8410);
+}
+
+std::vector<int64_t> closest_distances(const std::vector<Galaxy> &galaxies) {
+    std::vector<int64_t> closest{};
 
     // combinations 1-2, 1-3, 1-4, 2-3, 2-4, 3-4
     for (auto low_it = galaxies.begin();

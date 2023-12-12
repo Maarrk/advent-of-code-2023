@@ -1,3 +1,4 @@
+#include <array>
 #include <fstream>
 #include <iostream>
 #include <numeric>
@@ -23,12 +24,19 @@ int main(int argc, char *argv[]) {
 
     auto by_row = load(input_file);
     auto by_col = sorted_by_col(by_row);
-    expand_universe(by_row, by_col);
-    auto distances = closest_distances(by_row);
-    int distance_sum = std::accumulate(distances.begin(), distances.end(), 0);
+    std::vector<int64_t> sums{};
+    for (auto factor : std::array<int64_t, 2>{2, 1'000'000}) {
+        auto expanded{by_row};
+        expand_universe(expanded, by_col, factor);
+        auto distances = closest_distances(expanded);
+        long long distance_sum =
+            std::accumulate(distances.begin(), distances.end(), 0LL);
+        sums.push_back(distance_sum);
+    }
 
-    std::cout << "Part 1 answer: " << distance_sum << std::endl;
-    std::cout << "Part 2 answer: " << 0 << std::endl;
+    std::cout << "Part 1 answer: " << sums[0] << std::endl;
+    // FIXME: Should be O(10^6) times larger than part one, some overflow?
+    std::cout << "Part 2 answer: " << sums[1] << std::endl;
 
     return EXIT_SUCCESS;
 }
