@@ -1,4 +1,4 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include "day11.h"
+#include "day22.h"

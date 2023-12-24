@@ -6,28 +6,29 @@
 
 using namespace std::literals;
 
-int main(int argc, char *argv[]) {
-    const auto input_filename = [&] {
-        if (argc >= 2)
-            return std::string{argv[1]};
-        else
-            return "example.txt"s;
-    }();
+int main() {
+  int screenWidth = 800;
+  int screenHeight = 450;
 
-    std::ifstream input_file{input_filename};
-    if (input_file.fail()) {
-        std::cerr << "Could not open " << input_filename << std::endl;
-        return EXIT_FAILURE;
-    }
+  raylib::Window window(screenWidth, screenHeight, "raylib-cpp - basic window");
+  raylib::Texture logo("raylib_logo.png");
 
-    std::string line;
-    while(!input_file.eof()) {
-        std::getline(input_file, line);
-        std::cout << line << std::endl;
-    }
+  SetTargetFPS(60);
 
-    // std::cout << "Part 1 answer: " << 0 << std::endl;
-    // std::cout << "Part 2 answer: " << 0 << std::endl;
+  while (!window.ShouldClose()) {
+    BeginDrawing();
 
-    return EXIT_SUCCESS;
+    window.ClearBackground(RAYWHITE);
+
+    DrawText("Congrats! You created your first window!", 190, 200, 20,
+             LIGHTGRAY);
+
+    // Object methods.
+    logo.Draw(screenWidth / 2 - logo.GetWidth() / 2,
+              screenHeight / 2 - logo.GetHeight() / 2);
+
+    EndDrawing();
+  }
+
+  return EXIT_SUCCESS;
 }
