@@ -7,3 +7,6 @@
 [submodule "raylib-cpp"]
 	path = raylib-cpp
 	url = git@github.com:RobLoach/raylib-cpp.git
+[submodule "raylib"]
+	path = raylib
+	url = git@github.com:raysan5/raylib.git
