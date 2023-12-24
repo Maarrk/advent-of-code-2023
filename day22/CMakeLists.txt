@@ -18,4 +18,3 @@ add_executable(day22test
 file(GLOB TEXT_FILES *.txt)
 
 file(COPY ${TEXT_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-file(COPY "../raylib/examples/textures/resources/raylib_logo.png" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

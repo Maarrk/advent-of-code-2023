@@ -7,7 +7,7 @@
 
 ## Log
 
-_Implicit `std::` before some identifiers here_
+_Names in `monospace` referring to standard library (`std::`), unless a link to something else is provided._
 
 - Day 1:
   - Setup CMake subfolders with copying data files
@@ -38,3 +38,8 @@ _Implicit `std::` before some identifiers here_
 - Day 11:
   - `emplace_back` into a `vector`
   - Loop for pair combination with iterators
+- Day 22:
+  - Use [raylib](https://www.raylib.com/) through [C++ wrapper](https://github.com/RobLoach/raylib-cpp)
+    - Keeps using the C version of `Vector3` instead of the C++ one with operators
+    - Unfortunately doesn't define typed enums
+  - Use `regex` to parse a structure
