@@ -27,6 +27,7 @@ Brick Brick::from_string(const std::string &input_line) {
         throw std::invalid_argument{"input line didn't match pattern"};
     }
 
+    // FIXME: Only loads one digit
     rl::Vector3 v1(std::stoi(match[1]), std::stoi(match[2]),
                    std::stoi(match[3]));
     rl::Vector3 v2(std::stoi(match[4]), std::stoi(match[5]),
@@ -37,6 +38,8 @@ Brick Brick::from_string(const std::string &input_line) {
 TEST_CASE("Brick deserialisation") {
     CHECK_EQ(Brick::from_string("1,0,1~1,2,1"),
              Brick(rl::Vector3(1, 0, 1), rl::Vector3(1, 2, 1)));
+    CHECK_EQ(Brick::from_string("3,7,269~3,7,270"),
+             Brick(rl::Vector3(3, 7, 269), rl::Vector3(3, 7, 270)));
 }
 
 void Brick::Draw() const {
@@ -47,4 +50,10 @@ void Brick::Draw() const {
     rl::Vector3 size = max - min;
     center.DrawCube(size, GRAY);
     center.DrawCubeWires(size, BLACK);
+}
+
+std::ostream &operator<<(std::ostream &os, const Brick &brick) {
+    return os << "Brick{ {" << brick.start.x << "," << brick.start.y << ","
+              << brick.start.z << "}~{" << brick.end.x << "," << brick.end.y
+              << "," << brick.end.z << "} }";
 }

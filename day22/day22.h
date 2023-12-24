@@ -1,3 +1,4 @@
+#include <ostream>
 #include <string>
 
 #include "raylib-cpp.hpp"
@@ -15,3 +16,5 @@ struct Brick {
 
     void Draw() const;
 };
+
+std::ostream &operator<<(std::ostream &os, const Brick &brick);

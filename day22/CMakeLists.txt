@@ -14,6 +14,7 @@ target_link_libraries(day22 raylib)
 add_executable(day22test
     day22.cpp
     day22test.cpp)
+target_link_libraries(day22test raylib)
 
 file(GLOB TEXT_FILES *.txt)
 
